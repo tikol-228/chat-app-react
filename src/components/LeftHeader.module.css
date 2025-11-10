@@ -1,0 +1,57 @@
+.leftHeader {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.headerActions {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.iconBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.iconBtn img {
+  width: 24px;
+  height: 24px;
+}
+
+.menu {
+  position: absolute;
+  right: 0;
+  top: 40px;
+  background: var(--left-bg);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  padding: 8px;
+  z-index: 10;
+  min-width: 160px;
+}
+
+.menuItem {
+  background: none;
+  border: none;
+  color: var(--muted);
+  padding: 6px 12px;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+}
+
+.menuItem:hover {
+  background: rgba(255,255,255,0.05);
+}
+
+.userIdDisplay {
+  color: var(--muted);
+  margin-bottom: 6px;
+  font-size: 13px;
+}
