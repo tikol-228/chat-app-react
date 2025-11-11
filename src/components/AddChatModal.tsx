@@ -1,39 +1,89 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
+import styles from "./AddChatModal.module.css";
 
 interface AddChatModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddChat: (chatName: string, userId: string) => void;
+  onCreate: (chatType: string, chatName: string) => void;
 }
 
-const AddChatModal: React.FC<AddChatModalProps> = ({ isOpen, onClose, onAddChat }) => {
-  const [chatName, setChatName] = useState('');
-  const [userId, setUserId] = useState('');
+const AddChatModal: React.FC<AddChatModalProps> = ({ onClose, onCreate, isOpen }) => {
+  const [chatType, setChatType] = useState<"public" | "private" | "password">("public");
+  const [chatName, setChatName] = useState("");
+  const [password, setPassword] = useState("");
 
   if (!isOpen) return null;
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onCreate(chatType, chatName);
+  };
+
   return (
-    <div style={{position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100}}>
-      <div style={{background: '#232323', padding: '24px', borderRadius: '12px', minWidth: '320px'}}>
-        <h3 style={{color: '#fff'}}>Add Chat</h3>
-        <input
-          type="text"
-          placeholder="Chat name"
-          value={chatName}
-          onChange={e => setChatName(e.target.value)}
-          style={{width: '100%', marginBottom: '12px', padding: '8px'}}
-        />
-        <input
-          type="text"
-          placeholder="User ID"
-          value={userId}
-          onChange={e => setUserId(e.target.value)}
-          style={{width: '100%', marginBottom: '12px', padding: '8px'}}
-        />
-        <div style={{display: 'flex', justifyContent: 'flex-end', gap: '8px'}}>
-          <button onClick={onClose} style={{padding: '8px 16px'}}>Сancel</button>
-          <button onClick={() => { onAddChat(chatName, userId); setChatName(''); setUserId(''); onClose(); }} style={{padding: '8px 16px'}}>Add</button>
+    <div className={styles.overlay}>
+      <div className={styles.modal}>
+        <div className={styles.header}>
+          <h2 className={styles.title}>New Chat</h2>
+          <button onClick={onClose} className={styles.closeBtn}>×</button>
         </div>
+
+        <form onSubmit={handleSubmit}>
+          <div className={styles.field}>
+            <label className={styles.label}>Type</label>
+            <div className={styles.typeSwitch}>
+              <button
+                type="button"
+                className={`${styles.typeBtn} ${chatType === "public" ? styles.active : ""}`}
+                onClick={() => setChatType("public")}
+              >
+                Public
+              </button>
+              <button
+                type="button"
+                className={`${styles.typeBtn} ${chatType === "private" ? styles.active : ""}`}
+                onClick={() => setChatType("private")}
+              >
+                Private
+              </button>
+              <button
+                type="button"
+                className={`${styles.typeBtn} ${chatType === "password" ? styles.active : ""}`}
+                onClick={() => setChatType("password")}
+              >
+                Password
+              </button>
+            </div>
+          </div>
+
+          <div className={styles.field}>
+            <label className={styles.label}>Name</label>
+            <input
+              type="text"
+              placeholder="Enter chat name"
+              value={chatName}
+              onChange={(e) => setChatName(e.target.value)}
+              className={styles.input}
+              required
+            />
+          </div>
+
+          {chatType === "password" && (
+            <div className={styles.field}>
+              <label className={styles.label}>Password</label>
+              <input
+                type="password"
+                placeholder="Enter password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={styles.input}
+              />
+            </div>
+          )}
+
+          <button type="submit" className={styles.createBtn}>
+            Create Chat
+          </button>
+        </form>
       </div>
     </div>
   );

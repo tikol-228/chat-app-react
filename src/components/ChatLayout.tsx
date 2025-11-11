@@ -134,11 +134,11 @@ const ChatLayout: React.FC = () => {
       <AddChatModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        onAddChat={(chatName, userId) => {
-          handleAddChat(chatName, userId)
-          setModalOpen(false)
-        }}
-      />
+        onCreate={(chatName: string, userId: string) => {
+        handleAddChat(chatName, userId)
+        setModalOpen(false)
+    }}
+  />
     </div>
   )
 }

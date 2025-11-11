@@ -1,59 +1,123 @@
-.modalOverlay {
+.overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0,0,0,0.4);
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   z-index: 100;
+  backdrop-filter: blur(4px);
 }
 
-.modalContent {
-  background: var(--left-bg);
-  padding: 24px;
+.modal {
+  background: #1e1e1e;
   border-radius: 12px;
-  min-width: 320px;
+  padding: 24px;
+  width: 360px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  color: white;
+  animation: fadeIn 0.25s ease;
+}
+
+.header {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
 }
 
-.modalContent h3 {
-  color: var(--muted);
-  margin: 0 0 12px 0;
+.title {
+  font-size: 20px;
+  font-weight: 600;
 }
 
-.modalInput {
-  width: 100%;
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid rgba(255,255,255,0.1);
-  background: var(--panel-bg);
-  color: var(--muted);
-}
-
-.modalButtons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
-.modalButton {
-  padding: 8px 16px;
+.closeBtn {
+  background: transparent;
   border: none;
-  border-radius: 6px;
+  color: #aaa;
+  font-size: 22px;
   cursor: pointer;
+  transition: color 0.2s;
 }
-
-.cancelButton {
-  background: rgba(255,255,255,0.1);
-  color: var(--muted);
-}
-
-.addButton {
-  background: #0a84ff;
+.closeBtn:hover {
   color: #fff;
+}
+
+.field {
+  margin-bottom: 18px;
+}
+
+.label {
+  display: block;
+  font-size: 14px;
+  color: #aaa;
+  margin-bottom: 6px;
+}
+
+.typeSwitch {
+  display: flex;
+  background: #2c2c2c;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.typeBtn {
+  flex: 1;
+  padding: 8px 0;
+  border: none;
+  background: transparent;
+  color: #aaa;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.typeBtn:hover {
+  color: #fff;
+}
+
+.active {
+  background: #5b3cf6;
+  color: #fff;
+}
+
+.input {
+  width: 100%;
+  padding: 10px 12px;
+  background: #2c2c2c;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 14px;
+}
+
+.input:focus {
+  outline: 2px solid #5b3cf6;
+}
+
+.createBtn {
+  width: 100%;
+  padding: 10px 0;
+  background: #6b46ff;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.createBtn:hover {
+  background: #5b3cf6;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
