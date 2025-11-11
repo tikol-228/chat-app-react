@@ -16,12 +16,14 @@ interface Message {
 
 interface ChatContentProps {
   chatId?: string
-  messages?: Message[]
+  messages?: Message[],
+  onDeleteChat: (chatId: string) => void,
   onSendMessage?: (chatId: string, text: string) => void
 }
 
 const ChatContent: React.FC<ChatContentProps> = ({ chatId, messages = [], onSendMessage }) => {
   const [text, setText] = useState('')
+  const [open, setIsOpen] = useState(false)
   const messagesRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
@@ -39,6 +41,10 @@ const ChatContent: React.FC<ChatContentProps> = ({ chatId, messages = [], onSend
     if (!val) return
     onSendMessage(chatId, val)
     setText('')
+  }
+
+  const handleManegeChat = () => {
+    setIsOpen(prev => !prev)
   }
 
   const onKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (e) => {
@@ -78,9 +84,19 @@ const ChatContent: React.FC<ChatContentProps> = ({ chatId, messages = [], onSend
           <button className={styles.headerBtn} aria-label="Themes">
             <img src={theme} alt="Themes" />
           </button>
-          <button className={styles.headerBtn} aria-label="About">
+          <button
+            className={styles.headerBtn}
+            aria-label="About"
+            onClick={handleManegeChat}>
             <img src={about} alt="About" />
           </button>
+          {open && (
+            <div className={styles.popup}>
+              <p className={styles.deleteText} onClick={handleDeleteChat}>
+                Delete chat
+              </p>
+            </div>
+          )}
         </div>
       </div>
 

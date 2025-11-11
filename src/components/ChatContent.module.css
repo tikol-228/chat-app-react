@@ -143,9 +143,10 @@
 /* ---------- WELCOME SCREEN ---------- */
 .welcomeWrapper {
   display: flex;
-  align-items: center;
-  justify-content: center;
   height: 100%;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
   text-align: center;
 }
 
@@ -197,6 +198,25 @@
   align-items: center;
   gap: 12px;
 }
+
+.popup {
+  position: absolute;
+  top: 60px;
+  right: 20px;
+  background: #3f3f3f;
+  padding: 10px 16px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.deleteText {
+  color: red;
+  font-weight: bold;
+  cursor: pointer;
+  user-select: none;
+}
+
 
 .headerBtn {
   background: #202020;

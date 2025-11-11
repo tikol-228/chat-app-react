@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import AddChatModal from './AddChatModal';
+import styles from './LeftPanel.module.css';
 
 interface Chat {
   name: string;
@@ -9,27 +10,59 @@ interface Chat {
 const LeftPanel: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [chats, setChats] = useState<Chat[]>([]);
+  const [selectedChat, setSelectedChat] = useState<string | null>(null);
 
   const handleAddChat = (name: string, userId: string) => {
     setChats([...chats, { name, userId }]);
   };
 
+  const handleSelectChat = (chatId: string) => {
+    setSelectedChat(chatId);
+  };
+
+  const handleDeleteChat = (chatId: string) => {
+      setChats(chats.filter((chat) => chat.userId !== chatId));
+      if (selectedChat === chatId) setSelectedChat(null);
+  };
+
   return (
-    <div style={{width: '320px', background: '#181818', color: '#fff', height: '100vh', display: 'flex', flexDirection: 'column', borderRight: '1px solid #232323'}}>
-      <div style={{padding: '16px', borderBottom: '1px solid #232323', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-        <h2 style={{margin: 0}}>Чаты</h2>
-        <button onClick={() => setModalOpen(true)} style={{background: '#232323', color: '#fff', border: 'none', borderRadius: '6px', padding: '6px 12px', cursor: 'pointer'}}>Добавить чат</button>
+    <div className={styles.panel}>
+      <div className={styles.header}>
+        <h2 className={styles.title}>Чаты</h2>
+        <button className={styles.addBtn} onClick={() => setModalOpen(true)}>
+          Добавить чат
+        </button>
       </div>
-      <ul style={{listStyle: 'none', margin: 0, padding: '16px', flex: 1, overflowY: 'auto'}}>
-        {chats.length === 0 && <li style={{color: '#aaa'}}>Нет чатов</li>}
-        {chats.map((chat, idx) => (
-          <li key={idx} style={{padding: '10px 0', borderBottom: '1px solid #232323'}}>
-            <strong>{chat.name}</strong><br/>
-            <span style={{fontSize: '12px', color: '#aaa'}}>ID: {chat.userId}</span>
+
+      <ul className={styles.chatList}>
+        {chats.length === 0 && <li className={styles.empty}>Нет чатов</li>}
+        {chats.map((chat) => (
+          <li
+            key={chat.userId}
+            className={`${styles.chatItem} ${
+              selectedChat === chat.userId ? styles.activeChat : ''
+            }`}
+          >
+            <div onClick={() => handleSelectChat(chat.userId)}>
+              <strong>{chat.name}</strong>
+              <br />
+              <span className={styles.chatId}>ID: {chat.userId}</span>
+            </div>
+            <button
+              className={styles.deleteBtn}
+              onClick={() => handleDeleteChat(chat.userId)}
+            >
+              Удалить
+            </button>
           </li>
         ))}
       </ul>
-      <AddChatModal isOpen={modalOpen} onClose={() => setModalOpen(false)} onAddChat={handleAddChat} />
+
+      <AddChatModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onAddChat={handleAddChat}
+      />
     </div>
   );
 };

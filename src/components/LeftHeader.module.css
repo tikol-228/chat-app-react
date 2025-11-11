@@ -1,57 +1,107 @@
 .leftHeader {
+  width: 320px;
+  height: 100vh;
   display: flex;
   flex-direction: column;
-  position: relative;
+  padding: 16px;
+  color: #fff;
+}
+
+.headerTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
 }
 
 .headerActions {
   display: flex;
-  gap: 12px;
-  margin-top: 10px;
+  gap: 8px;
 }
 
 .iconBtn {
-  background: none;
+  background: #232323;
   border: none;
-  cursor: pointer;
-  padding: 4px;
-  display: flex;
-  align-items: center;
-}
-
-.iconBtn img {
-  width: 24px;
-  height: 24px;
-}
-
-.menu {
-  position: absolute;
-  right: 0;
-  top: 40px;
-  background: var(--left-bg);
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  padding: 8px;
-  z-index: 10;
-  min-width: 160px;
-}
-
-.menuItem {
-  background: none;
-  border: none;
-  color: var(--muted);
+  border-radius: 6px;
   padding: 6px 12px;
   cursor: pointer;
-  width: 100%;
-  text-align: left;
+  color: #fff;
+  font-size: 14px;
 }
 
-.menuItem:hover {
-  background: rgba(255,255,255,0.05);
+.chatList {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
 }
 
-.userIdDisplay {
-  color: var(--muted);
-  margin-bottom: 6px;
-  font-size: 13px;
+.chatItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #2a2a2a;
+  transition: background 0.2s;
+}
+
+.chatItem:hover {
+  background: #333;
+}
+
+.chatItem span {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chatButtons {
+  display: flex;
+  gap: 6px;
+}
+
+.deleteBtn {
+  background: #ff4d4f;
+  border: none;
+  color: #fff;
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.deleteBtn:hover {
+  background: #ff7875;
+}
+
+.publicBtn {
+  background: #1890ff;
+  border: none;
+  color: #fff;
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.publicBtn:hover {
+  background: #40a9ff;
+}
+
+.emptyChat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 40px;
+  color: #aaa;
+  text-align: center;
+}
+
+.emptyChat img {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 12px;
 }

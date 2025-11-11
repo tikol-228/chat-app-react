@@ -22,6 +22,7 @@ const ChatLayout: React.FC = () => {
   const [chats, setChats] = useState<Chat[]>([])
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedChatId, setSelectedChatId] = useState<string>()
+  const [menuOpen, setMenuOpen] = useState(false)
   const [messages, setMessages] = useState<Record<string, Message[]>>({})
   const [userId, setUserId] = useState<number | null>(null)
 
@@ -108,20 +109,34 @@ const ChatLayout: React.FC = () => {
           ) : (
             <div className={styles.chatsList}>
               {chats.map(chat => (
-                <button
+                <div
                   key={chat.id}
                   className={`${styles.chatItem} ${selectedChatId === chat.id ? styles.selected : ''}`}
-                  onClick={() => setSelectedChatId(chat.id)}
                 >
-                  <div className={styles.chatAvatar}>
-                    {chat.name[0].toUpperCase()}
+                  <button
+                    className={styles.chatMain}
+                    onClick={() => setSelectedChatId(chat.id)}
+                  >
+                    <div className={styles.chatAvatar}>
+                      {chat.name[0].toUpperCase()}
+                    </div>
+                    <div className={styles.chatInfo}>
+                      <h4>{chat.name}</h4>
+                      <p className={styles.muted}>Click to open chat</p>
+                    </div>
+                  </button>
+                  <div className={styles.chatButtons}>
+                    <button className={styles.publicBtn}>Public</button>
+                    <button
+                      className={styles.deleteBtn}
+                      onClick={() => setChats(prev => prev.filter(c => c.id !== chat.id))}
+                    >
+                      Delete
+                    </button>
                   </div>
-                  <div className={styles.chatInfo}>
-                    <h4>{chat.name}</h4>
-                    <p className={styles.muted}>Click to open chat</p>
-                  </div>
-                </button>
-              ))}
+                </div>
+            ))}
+
             </div>
           )}
           <BottomNav />
