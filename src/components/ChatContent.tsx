@@ -21,7 +21,7 @@ interface ChatContentProps {
   onSendMessage?: (chatId: string, text: string) => void
 }
 
-const ChatContent: React.FC<ChatContentProps> = ({ chatId, messages = [], onSendMessage }) => {
+const ChatContent: React.FC<ChatContentProps> = ({ chatId, messages = [], onSendMessage, onDeleteChat }) => {
   const [text, setText] = useState('')
   const [open, setIsOpen] = useState(false)
   const messagesRef = useRef<HTMLDivElement | null>(null)
@@ -45,6 +45,12 @@ const ChatContent: React.FC<ChatContentProps> = ({ chatId, messages = [], onSend
 
   const handleManegeChat = () => {
     setIsOpen(prev => !prev)
+  }
+
+  const handleDeleteChat = () => {
+    if (!chatId) return
+    if (onDeleteChat) onDeleteChat(chatId)
+    setIsOpen(false)
   }
 
   const onKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (e) => {

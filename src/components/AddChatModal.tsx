@@ -4,7 +4,8 @@ import styles from "./AddChatModal.module.css";
 interface AddChatModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (chatType: string, chatName: string) => void;
+  // onCreate now expects (chatName, userId) — modal should provide the chat name; userId is generated here
+  onCreate: (chatName: string, userId: string) => void;
 }
 
 const AddChatModal: React.FC<AddChatModalProps> = ({ onClose, onCreate, isOpen }) => {
@@ -16,7 +17,9 @@ const AddChatModal: React.FC<AddChatModalProps> = ({ onClose, onCreate, isOpen }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onCreate(chatType, chatName);
+    // generate a short user id for chat ownership/identification
+    const generatedId = 'u' + Math.floor(Math.random() * 900000 + 100000).toString()
+    onCreate(chatName, generatedId)
   };
 
   return (

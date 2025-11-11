@@ -66,6 +66,16 @@ const ChatLayout: React.FC = () => {
     setSelectedChatId(newChat.id)
   }
 
+  const handleDeleteChat = (chatId: string) => {
+    setChats(prev => prev.filter(c => c.id !== chatId))
+    setMessages(prev => {
+      const copy = { ...prev }
+      delete copy[chatId]
+      return copy
+    })
+    if (selectedChatId === chatId) setSelectedChatId(undefined)
+  }
+
   const sendMessage = (chatId: string, text: string) => {
     if (!chatId) return
     const trimmed = text.trim()
@@ -98,7 +108,9 @@ const ChatLayout: React.FC = () => {
         <aside className={styles.leftPanel}>
           <LeftHeader
             chats={chats}
+            setChats={setChats}
             onAddChat={() => setModalOpen(true)}
+            onDeleteChat={handleDeleteChat}
           />
           {chats.length === 0 ? (
             <div className={styles.emptyState}>
@@ -126,10 +138,9 @@ const ChatLayout: React.FC = () => {
                     </div>
                   </button>
                   <div className={styles.chatButtons}>
-                    <button className={styles.publicBtn}>Public</button>
                     <button
                       className={styles.deleteBtn}
-                      onClick={() => setChats(prev => prev.filter(c => c.id !== chat.id))}
+                      onClick={() => handleDeleteChat(chat.id)}
                     >
                       Delete
                     </button>
@@ -142,7 +153,7 @@ const ChatLayout: React.FC = () => {
           <BottomNav />
         </aside>
         <main className={styles.mainPanel}>
-          <ChatContent chatId={selectedChatId} messages={selectedChatId ? messages[selectedChatId] ?? [] : []} onSendMessage={sendMessage} />
+          <ChatContent chatId={selectedChatId} messages={selectedChatId ? messages[selectedChatId] ?? [] : []} onSendMessage={sendMessage} onDeleteChat={handleDeleteChat} />
         </main>
       </div>
 

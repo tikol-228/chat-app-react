@@ -9,14 +9,16 @@ interface Chat {
 
 interface LeftHeaderProps {
   chats: Chat[]
-  setChats: React.Dispatch<React.SetStateAction<Chat[]>>
+  setChats?: React.Dispatch<React.SetStateAction<Chat[]>>
   onAddChat: () => void
+  onDeleteChat?: (chatId: string) => void
 }
 
-const LeftHeader: React.FC<LeftHeaderProps> = ({ chats, setChats, onAddChat }) => {
+const LeftHeader: React.FC<LeftHeaderProps> = ({ chats, setChats, onAddChat, onDeleteChat }) => {
 
   const handleDeleteChat = (id: string) => {
-    setChats(chats.filter(chat => chat.id !== id))
+    if (onDeleteChat) return onDeleteChat(id)
+    if (setChats) setChats(chats.filter(chat => chat.id !== id))
   }
 
   return (
@@ -45,7 +47,6 @@ const LeftHeader: React.FC<LeftHeaderProps> = ({ chats, setChats, onAddChat }) =
                 >
                   Delete
                 </button>
-                <button className={styles.publicBtn}>Public</button>
               </div>
             </div>
           ))}
