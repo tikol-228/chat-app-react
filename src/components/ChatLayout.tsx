@@ -22,7 +22,6 @@ const ChatLayout: React.FC = () => {
   const [chats, setChats] = useState<Chat[]>([])
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedChatId, setSelectedChatId] = useState<string>()
-  const [menuOpen, setMenuOpen] = useState(false)
   const [messages, setMessages] = useState<Record<string, Message[]>>({})
   const [userId, setUserId] = useState<number | null>(null)
 

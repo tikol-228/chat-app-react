@@ -61,7 +61,7 @@ const LeftPanel: React.FC = () => {
       <AddChatModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        onAddChat={handleAddChat}
+        onCreate={handleAddChat}
       />
     </div>
   );
