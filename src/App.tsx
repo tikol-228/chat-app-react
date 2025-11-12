@@ -1,8 +1,9 @@
 import './App.css'
-import ChatLayout from './components/ChatLayout'
+import router from './providers/router'
+import { RouterProvider } from 'react-router-dom'
 
 function App() {
-  return <ChatLayout />
+  return <RouterProvider router={router}/>
 }
 
 export default App
