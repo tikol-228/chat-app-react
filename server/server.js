@@ -1,10 +1,7 @@
-// server.js (ESM) — раздаёт статические файлы из указанной папки dist
-// и запускает Socket.io на том же порту.
-// Заменяй DIST_DIR на свой путь к сборке при необходимости.
-
 import http from 'http';
 import { Server } from 'socket.io';
 import path from 'path';
+import db from './db.json'
 import url from 'url';
 import fs from 'fs';
 
@@ -60,6 +57,76 @@ const server = http.createServer((req, res) => {
   // Логируем запросы для отладки
   console.log('Request:', pathname);
 
+  // Simple API: register user
+  const apiHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type'
+  };
+
+  if (pathname === '/api/register') {
+    if (req.method === 'OPTIONS') {
+      res.writeHead(204, apiHeaders);
+      res.end();
+      return;
+    }
+
+    if (req.method !== 'POST') {
+      res.writeHead(405, { ...apiHeaders, 'Content-Type': 'text/plain; charset=utf-8' });
+      res.end('Method not allowed');
+      return;
+    }
+
+    // collect body
+    let body = '';
+    req.on('data', (chunk) => { body += chunk.toString(); });
+    req.on('end', () => {
+      try {
+        const payload = JSON.parse(body || '{}');
+        const { email, password } = payload;
+        if (!email || !password) {
+          res.writeHead(400, { ...apiHeaders, 'Content-Type': 'application/json; charset=utf-8' });
+          res.end(JSON.stringify({ error: 'Email and password are required' }));
+          return;
+        }
+
+        const dbPath = path.join(__dirname, 'db.json');
+        // read current db
+        fs.readFile(dbPath, 'utf8', (rErr, data) => {
+          let store = {};
+          try {
+            store = data ? JSON.parse(data) : {};
+          } catch (e) {
+            store = {};
+          }
+
+          if (!Array.isArray(store.users)) store.users = [];
+
+          const id = Date.now();
+          const user = { id, email, password };
+          store.users.push(user);
+
+          fs.writeFile(dbPath, JSON.stringify(store, null, 2), 'utf8', (wErr) => {
+            if (wErr) {
+              console.error('DB write error:', wErr);
+              res.writeHead(500, { ...apiHeaders, 'Content-Type': 'application/json; charset=utf-8' });
+              res.end(JSON.stringify({ error: 'Failed to write to DB' }));
+              return;
+            }
+
+            res.writeHead(201, { ...apiHeaders, 'Content-Type': 'application/json; charset=utf-8' });
+            res.end(JSON.stringify({ ok: true, user }));
+          });
+        });
+      } catch (e) {
+        res.writeHead(400, { ...apiHeaders, 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ error: 'Invalid JSON' }));
+      }
+    });
+
+    return;
+  }
+
   // По умолчанию отдаём index.html для "/"
   let attemptedPath;
   if (pathname === '/' || pathname === '') {
@@ -113,6 +180,13 @@ const server = http.createServer((req, res) => {
     });
   });
 });
+
+// auth
+
+const dbAddData = () => {
+
+}
+
 
 // Socket.io
 const io = new Server(server, {
