@@ -1,0 +1,14 @@
+{
+  "name": "chat-app-server",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^17.2.3",
+    "mongoose": "^8.19.3"
+  }
+}

@@ -1,8 +1,12 @@
+import 'dotenv/config';
 import http from 'http';
 import { Server } from 'socket.io';
 import path from 'path';
 import url from 'url';
 import fs from 'fs';
+import connectDB from './db.js';
+import bcrypt from 'bcryptjs'
+import User from './models/User.js'
 
 const __filename = url.fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -57,10 +61,13 @@ const server = http.createServer((req, res) => {
   console.log('Request:', pathname);
 
   // Simple API: register user
+  // We'll set CORS headers per-request and allow credentials for cookies
+  const origin = req.headers.origin || '*'
   const apiHeaders = {
-    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Origin': origin,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type'
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Credentials': 'true'
   };
 
   if (pathname === '/api/register') {
@@ -79,7 +86,7 @@ const server = http.createServer((req, res) => {
     // collect body
     let body = '';
     req.on('data', (chunk) => { body += chunk.toString(); });
-    req.on('end', () => {
+    req.on('end', async () => {
       try {
         const payload = JSON.parse(body || '{}');
         const { email, password } = payload;
@@ -89,37 +96,26 @@ const server = http.createServer((req, res) => {
           return;
         }
 
-        const dbPath = path.join(__dirname, 'db.json');
-        // read current db
-        fs.readFile(dbPath, 'utf8', (rErr, data) => {
-          let store = {};
-          try {
-            store = data ? JSON.parse(data) : {};
-          } catch (e) {
-            store = {};
-          }
+        // ensure DB connected
+        try { await connectDB() } catch (e) { /* already logs */ }
 
-          if (!Array.isArray(store.users)) store.users = [];
+        // check existing
+        const existing = await User.findOne({ email }).lean().exec();
+        if (existing) {
+          res.writeHead(409, { ...apiHeaders, 'Content-Type': 'application/json; charset=utf-8' });
+          res.end(JSON.stringify({ error: 'User already exists' }));
+          return;
+        }
 
-          const id = Date.now();
-          const user = { id, email, password };
-          store.users.push(user);
+        const hashed = await bcrypt.hash(password, 10)
+        const user = await User.create({ email, password: hashed })
 
-          fs.writeFile(dbPath, JSON.stringify(store, null, 2), 'utf8', (wErr) => {
-            if (wErr) {
-              console.error('DB write error:', wErr);
-              res.writeHead(500, { ...apiHeaders, 'Content-Type': 'application/json; charset=utf-8' });
-              res.end(JSON.stringify({ error: 'Failed to write to DB' }));
-              return;
-            }
-
-            res.writeHead(201, { ...apiHeaders, 'Content-Type': 'application/json; charset=utf-8' });
-            res.end(JSON.stringify({ ok: true, user }));
-          });
-        });
+        res.writeHead(201, { ...apiHeaders, 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ ok: true, user: { id: user._id, email: user.email } }));
       } catch (e) {
+        console.error('Register error', e)
         res.writeHead(400, { ...apiHeaders, 'Content-Type': 'application/json; charset=utf-8' });
-        res.end(JSON.stringify({ error: 'Invalid JSON' }));
+        res.end(JSON.stringify({ error: 'Invalid JSON or server error' }));
       }
     });
 
@@ -141,7 +137,7 @@ const server = http.createServer((req, res) => {
 
     let body = '';
     req.on('data', (chunk) => { body += chunk.toString(); });
-    req.on('end', () => {
+    req.on('end', async () => {
       try {
         const payload = JSON.parse(body || '{}');
         const { email, password } = payload;
@@ -151,43 +147,30 @@ const server = http.createServer((req, res) => {
           return;
         }
 
-        const dbPath = path.join(__dirname, 'db.json');
-        fs.readFile(dbPath, 'utf8', (rErr, data) => {
-          let store = {};
-          try {
-            store = data ? JSON.parse(data) : {};
-          } catch (e) {
-            store = {};
-          }
+        try { await connectDB() } catch (e) { }
 
-          if (!Array.isArray(store.users)) store.users = [];
+        const user = await User.findOne({ email }).exec();
+        if (!user) {
+          res.writeHead(401, { ...apiHeaders, 'Content-Type': 'application/json; charset=utf-8' });
+          res.end(JSON.stringify({ error: 'Invalid credentials' }));
+          return;
+        }
 
-          const existing = store.users.find(u => u.email === email);
-          if (existing) {
-            res.writeHead(200, { ...apiHeaders, 'Content-Type': 'application/json; charset=utf-8' });
-            res.end(JSON.stringify({ ok: true, message: 'User exists', user: existing }));
-            return;
-          }
+        const match = await bcrypt.compare(password, user.password)
+        if (!match) {
+          res.writeHead(401, { ...apiHeaders, 'Content-Type': 'application/json; charset=utf-8' });
+          res.end(JSON.stringify({ error: 'Invalid credentials' }));
+          return;
+        }
 
-          const id = Date.now();
-          const user = { id, email, password };
-          store.users.push(user);
-
-          fs.writeFile(dbPath, JSON.stringify(store, null, 2), 'utf8', (wErr) => {
-            if (wErr) {
-              console.error('DB write error:', wErr);
-              res.writeHead(500, { ...apiHeaders, 'Content-Type': 'application/json; charset=utf-8' });
-              res.end(JSON.stringify({ error: 'Failed to write to DB' }));
-              return;
-            }
-
-            res.writeHead(201, { ...apiHeaders, 'Content-Type': 'application/json; charset=utf-8' });
-            res.end(JSON.stringify({ ok: true, message: 'Created user', user }));
-          });
-        });
+        // set a simple auth cookie (not secure; for demo only)
+        const cookie = `auth=1; Path=/; HttpOnly`;
+        res.writeHead(200, { ...apiHeaders, 'Content-Type': 'application/json; charset=utf-8', 'Set-Cookie': cookie })
+        res.end(JSON.stringify({ ok: true, user: { id: user._id, email: user.email } }))
       } catch (e) {
+        console.error('Login error', e)
         res.writeHead(400, { ...apiHeaders, 'Content-Type': 'application/json; charset=utf-8' });
-        res.end(JSON.stringify({ error: 'Invalid JSON' }));
+        res.end(JSON.stringify({ error: 'Invalid JSON or server error' }));
       }
     });
 
@@ -196,11 +179,70 @@ const server = http.createServer((req, res) => {
 
   // По умолчанию отдаём index.html для "/"
   let attemptedPath;
-  if (pathname === '/' || pathname === '') {
-    attemptedPath = path.join(DIST_DIR, 'index.html');
+  // Simple auth guard on the server: if user has no auth cookie, redirect to /auth
+  // Allow API, socket and static asset requests through.
+  const isApi = pathname.startsWith('/api/')
+  const isSocket = pathname.startsWith('/socket.io')
+  const isAsset = pathname.startsWith('/assets/') || pathname.startsWith('/static/') || pathname.endsWith('.js') || pathname.endsWith('.css') || pathname.endsWith('.png') || pathname.endsWith('.svg') || pathname.endsWith('.ico')
+
+  // parse cookies
+  const cookies = (req.headers.cookie || '').split(';').map(c => c.trim()).filter(Boolean).reduce((acc, cur) => {
+    const idx = cur.indexOf('=')
+    if (idx === -1) return acc
+    const key = cur.slice(0, idx)
+    const val = cur.slice(idx + 1)
+    acc[key] = val
+    return acc
+  }, {})
+
+  // if request is to the login/logout API, handle below
+  if (pathname === '/api/login' || pathname === '/api/logout') {
+    attemptedPath = null // handled specially
+  } else if (!isApi && !isSocket && !isAsset && !(cookies.auth === '1') && pathname !== '/auth') {
+    // redirect unauthenticated user to /auth
+    res.writeHead(302, { Location: '/auth' })
+    res.end()
+    console.log('Redirecting unauthenticated request to /auth:', pathname)
+    return
   } else {
-    attemptedPath = safeJoin(DIST_DIR, pathname);
+    if (pathname === '/' || pathname === '') {
+      attemptedPath = path.join(DIST_DIR, 'index.html');
+    } else {
+      attemptedPath = safeJoin(DIST_DIR, pathname);
+    }
   }
+
+  // Handle simple login/logout API
+  if (pathname === '/api/login') {
+    // collect body
+    let body = ''
+    req.on('data', chunk => { body += chunk.toString() })
+    req.on('end', () => {
+      try {
+        const data = JSON.parse(body || '{}')
+        const username = data.username || 'user'
+        // set a simple auth cookie (not secure; for demo only)
+        const cookie = `auth=1; Path=/; HttpOnly`;
+        res.writeHead(200, { 'Content-Type': 'application/json', 'Set-Cookie': cookie })
+        res.end(JSON.stringify({ ok: true, username }))
+      } catch (e) {
+        res.writeHead(400, { 'Content-Type': 'application/json' })
+        res.end(JSON.stringify({ ok: false }))
+      }
+    })
+    return
+  }
+
+  if (pathname === '/api/logout') {
+    // clear cookie
+    res.writeHead(200, { 'Content-Type': 'application/json', 'Set-Cookie': 'auth=0; Path=/; HttpOnly; Max-Age=0' })
+    res.end(JSON.stringify({ ok: true }))
+    return
+  }
+
+  //mongodb
+
+  connectDB();
 
   if (!attemptedPath) {
     res.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8' });

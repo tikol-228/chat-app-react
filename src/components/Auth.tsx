@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from 'react-router-dom'
 import styles from "./Auth.module.css";
 import Toast from "./Toast";
 
 const Auth = () => {
+  const navigate = useNavigate()
 
   const [authMode, setAuthMode] = useState("login");
   const [email, setEmail] = useState("");
@@ -53,8 +55,9 @@ const Auth = () => {
 
       // send to server
       try {
-        const res = await fetch('/api/register', {
+        const res = await fetch('http://localhost:8081/api/register', {
           method: 'POST',
+          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password: pass })
         });
@@ -82,11 +85,33 @@ const Auth = () => {
       return;
     }
 
-    // login (demo) — no server login implemented here
-    setToastType('success');
-    setToastMessage('Logged in (demo)');
-    setShowToast(true);
-    console.log({ mode: authMode, email, pass });
+    // login: call server to set auth cookie
+    try {
+      const res = await fetch('http://localhost:8081/api/login', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email, password: pass })
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setToastType('error')
+        setToastMessage(data?.error || 'Login failed')
+        setShowToast(true)
+        return
+      }
+      setToastType('success')
+      setToastMessage('Logged in')
+      setShowToast(true)
+      // redirect to app
+      setTimeout(() => {
+        navigate('/')
+      }, 400)
+    } catch (err) {
+      setToastType('error')
+      setToastMessage('Network error')
+      setShowToast(true)
+    }
   };
 
   return (
